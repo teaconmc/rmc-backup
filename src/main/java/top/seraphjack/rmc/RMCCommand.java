@@ -1,0 +1,82 @@
+package top.seraphjack.rmc;
+
+import com.mojang.brigadier.CommandDispatcher;
+import com.mojang.brigadier.LiteralMessage;
+import com.mojang.brigadier.arguments.StringArgumentType;
+import com.mojang.brigadier.context.CommandContext;
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
+import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
+import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.Component;
+import top.seraphjack.restic.entity.Snapshot;
+
+import java.time.Duration;
+import java.time.format.DateTimeParseException;
+import java.util.Comparator;
+import java.util.List;
+
+import static com.mojang.brigadier.Command.SINGLE_SUCCESS;
+import static net.minecraft.commands.Commands.argument;
+import static net.minecraft.commands.Commands.literal;
+
+
+public final class RMCCommand {
+
+    public static final DynamicCommandExceptionType ERROR_INVALID_INTERVAL =
+            new DynamicCommandExceptionType(msg -> new LiteralMessage("Invalid ISO8601 duration: " + msg));
+
+    static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
+        dispatcher.register(
+                literal("rmc")
+                        .then(literal("schedule")
+                                .requires(p -> p.hasPermission(3))
+                                .executes(RMCCommand::scheduleBackup))
+                        .then(literal("setInterval")
+                                .requires(p -> p.hasPermission(3))
+                                .then(argument("interval", StringArgumentType.string())
+                                        .executes(RMCCommand::setInterval)))
+                        .then(literal("snapshots")
+                                .requires(p -> p.hasPermission(3))
+                                .executes(RMCCommand::listSnapshots)
+                        )
+
+        );
+    }
+
+    private static int scheduleBackup(CommandContext<CommandSourceStack> context) {
+        RMC.backupCore.scheduleNow();
+        context.getSource().sendSuccess(() -> Component.literal("Backup scheduled"), true);
+        return SINGLE_SUCCESS;
+    }
+
+    private static int setInterval(CommandContext<CommandSourceStack> context) throws CommandSyntaxException {
+        final String intervalString = StringArgumentType.getString(context, "interval");
+        final Duration interval;
+        try {
+            interval = Duration.parse(intervalString);
+        } catch (DateTimeParseException ex) {
+            throw ERROR_INVALID_INTERVAL.create(intervalString);
+        }
+        Config.BACKUP_INTERVAL.set(intervalString);
+        Config.BACKUP_INTERVAL.save();
+        RMC.backupCore.modifyBackupInterval(interval);
+        return SINGLE_SUCCESS;
+    }
+
+    private static int listSnapshots(CommandContext<CommandSourceStack> context) {
+        final List<Snapshot> snapshots;
+        try {
+            snapshots = RMC.backupCore.listSnapshots();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+
+        snapshots.stream().sorted(Comparator.comparing(Snapshot::getTime)).forEach(snapshot -> {
+            final String item = String.format("Snapshot %s at %s %.2f MiB", snapshot.getShortId(), snapshot.getTime(), snapshot.getSummary().getTotalBytesProcessed() / 1024.0 / 1024.0);
+            context.getSource().sendSuccess(() -> Component.literal(item), false);
+        });
+
+        return SINGLE_SUCCESS;
+    }
+
+}
