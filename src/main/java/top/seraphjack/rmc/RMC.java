@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.seraphjack.backupcore.BackupCore;
 import top.seraphjack.backupcore.BackupProfile;
+import top.seraphjack.restic.entity.Snapshot;
 
 import java.nio.file.Path;
 import java.time.Duration;
@@ -28,6 +29,7 @@ public final class RMC {
     private static final Logger log = LoggerFactory.getLogger(RMC.class);
 
     static BackupCore backupCore;
+    static List<Snapshot> snapshotListCache = List.of();
 
     public RMC(ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
@@ -62,6 +64,7 @@ public final class RMC {
                 .build();
 
         backupCore = BackupCore.create(backupProfile);
+        updateSnapshotListCache();
 
         log.info("RMC Backup initialized.");
     }
@@ -69,5 +72,13 @@ public final class RMC {
     @SubscribeEvent
     private static void serverStop(ServerStoppingEvent event) throws InterruptedException {
         backupCore.shutdown();
+    }
+
+    static void updateSnapshotListCache() {
+        try {
+            snapshotListCache = backupCore.listSnapshots();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

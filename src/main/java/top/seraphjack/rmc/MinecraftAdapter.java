@@ -76,6 +76,7 @@ public final class MinecraftAdapter implements top.seraphjack.backupcore.Minecra
     public void onBackupDone(BackupSummaryMessage message) {
         final String logMessage = String.format("Backup done! Took %.1f seconds, %.2f MiB added", message.getTotalDuration(), message.getDataAddedPacked() / 1024.0 / 1024.0);
         logAndBroadcastMessage(logMessage);
+        RMC.updateSnapshotListCache();
     }
 
     @Override
@@ -83,6 +84,7 @@ public final class MinecraftAdapter implements top.seraphjack.backupcore.Minecra
         if (forgetGroup.stream().anyMatch(g -> g.getRemove() != null && !g.getRemove().isEmpty())) {
             logAndBroadcastMessage("Removed %s old snapshots", forgetGroup.stream().mapToLong(g -> g.getRemove().size()).sum());
         }
+        RMC.updateSnapshotListCache();
     }
 
     @Override

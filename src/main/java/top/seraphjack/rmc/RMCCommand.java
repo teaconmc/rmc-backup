@@ -13,6 +13,7 @@ import org.slf4j.LoggerFactory;
 import top.seraphjack.restic.entity.Snapshot;
 
 import java.time.Duration;
+import java.time.ZoneId;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
@@ -43,7 +44,7 @@ public final class RMCCommand {
                                 .executes(RMCCommand::listSnapshots))
                         .then(literal("restore")
                                 .requires(p -> p.hasPermission(4))
-                                .then(argument("snapshot", StringArgumentType.string())
+                                .then(argument("snapshot", new SnapshotArgumentType())
                                         .executes(RMCCommand::restore)))
 
         );
@@ -70,15 +71,11 @@ public final class RMCCommand {
     }
 
     private static int listSnapshots(CommandContext<CommandSourceStack> context) {
-        final List<Snapshot> snapshots;
-        try {
-            snapshots = RMC.backupCore.listSnapshots();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+        final List<Snapshot> snapshots = RMC.snapshotListCache;
 
         snapshots.stream().sorted(Comparator.comparing(Snapshot::getTime)).forEach(snapshot -> {
-            final String item = String.format("Snapshot %s at %s %.2f MiB", snapshot.getShortId(), snapshot.getTime(), snapshot.getSummary().getTotalBytesProcessed() / 1024.0 / 1024.0);
+            final var time = snapshot.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            final String item = String.format("Snapshot %s at %s %.2f MiB", snapshot.getShortId(), time, snapshot.getSummary().getTotalBytesProcessed() / 1024.0 / 1024.0);
             context.getSource().sendSuccess(() -> Component.literal(item), false);
         });
 
@@ -86,9 +83,9 @@ public final class RMCCommand {
     }
 
     private static int restore(CommandContext<CommandSourceStack> context) {
-        final var snapshot = StringArgumentType.getString(context, "snapshot");
+        final var snapshot = context.getArgument("snapshot", Snapshot.class);
         try {
-            RMC.backupCore.restore(snapshot);
+            RMC.backupCore.restore(snapshot.getId());
         } catch (Exception e) {
             log.error("Error restoring snapshot", e);
             throw new RuntimeException(e);
