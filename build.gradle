@@ -101,10 +101,10 @@ configurations {
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
 
-    implementation("top.seraphjack:backup-core:0.1.0")
+    implementation("top.seraphjack:backup-core:0.1.2")
     implementation("top.seraphjack:restic-bindings:0.1.0")
 
-    jarJar("top.seraphjack:backup-core:0.1.0")
+    jarJar("top.seraphjack:backup-core:0.1.2")
     jarJar("top.seraphjack:restic-bindings:0.1.0")
     jarJar("com.fasterxml.jackson.core:jackson-core:2.16.1")
     jarJar("com.fasterxml.jackson.core:jackson-databind:2.16.1")

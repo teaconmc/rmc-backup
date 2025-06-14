@@ -8,8 +8,11 @@ import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.network.chat.Component;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import top.seraphjack.restic.entity.Snapshot;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
@@ -24,6 +27,7 @@ public final class RMCCommand {
 
     public static final DynamicCommandExceptionType ERROR_INVALID_INTERVAL =
             new DynamicCommandExceptionType(msg -> new LiteralMessage("Invalid ISO8601 duration: " + msg));
+    private static final Logger log = LoggerFactory.getLogger(RMCCommand.class);
 
     static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         dispatcher.register(
@@ -37,8 +41,11 @@ public final class RMCCommand {
                                         .executes(RMCCommand::setInterval)))
                         .then(literal("snapshots")
                                 .requires(p -> p.hasPermission(3))
-                                .executes(RMCCommand::listSnapshots)
-                        )
+                                .executes(RMCCommand::listSnapshots))
+                        .then(literal("restore")
+                                .requires(p -> p.hasPermission(4))
+                                .then(argument("snapshot", StringArgumentType.string())
+                                        .executes(RMCCommand::restore)))
 
         );
     }
@@ -76,6 +83,17 @@ public final class RMCCommand {
             context.getSource().sendSuccess(() -> Component.literal(item), false);
         });
 
+        return SINGLE_SUCCESS;
+    }
+
+    private static int restore(CommandContext<CommandSourceStack> context) {
+        final var snapshot = StringArgumentType.getString(context, "snapshot");
+        try {
+            RMC.backupCore.restore(snapshot);
+        } catch (Exception e) {
+            log.error("Error restoring snapshot", e);
+            throw new RuntimeException(e);
+        }
         return SINGLE_SUCCESS;
     }
 
