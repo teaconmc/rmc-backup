@@ -2,6 +2,7 @@ package top.seraphjack.rmc;
 
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.level.storage.LevelResource;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -19,7 +20,7 @@ import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
 
-@Mod(RMC.MOD_ID)
+@Mod(value = RMC.MOD_ID, dist = Dist.DEDICATED_SERVER)
 @EventBusSubscriber(modid = RMC.MOD_ID)
 public final class RMC {
 
