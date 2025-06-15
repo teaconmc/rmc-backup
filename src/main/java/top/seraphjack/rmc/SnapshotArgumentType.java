@@ -18,6 +18,15 @@ public class SnapshotArgumentType implements ArgumentType<Snapshot> {
 
     private static final SimpleCommandExceptionType ERR_SNAPSHOT_NOT_FOUND = new SimpleCommandExceptionType(new LiteralMessage("Snapshot not found"));
 
+    private static final SnapshotArgumentType INSTANCE = new SnapshotArgumentType();
+
+    private SnapshotArgumentType() {
+    }
+
+    public static SnapshotArgumentType snapshot() {
+        return INSTANCE;
+    }
+
     @Override
     public Snapshot parse(StringReader reader) throws CommandSyntaxException {
         final var snapshotTimeStr = readTimeString(reader);

@@ -44,7 +44,7 @@ public final class RMCCommand {
                                 .executes(RMCCommand::listSnapshots))
                         .then(literal("restore")
                                 .requires(p -> p.hasPermission(4))
-                                .then(argument("snapshot", new SnapshotArgumentType())
+                                .then(argument("snapshot", SnapshotArgumentType.snapshot())
                                         .executes(RMCCommand::restore)))
 
         );
