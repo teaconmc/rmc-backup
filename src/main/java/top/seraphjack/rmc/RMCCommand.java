@@ -7,7 +7,9 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.Style;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.seraphjack.restic.entity.Snapshot;
@@ -44,7 +46,7 @@ public final class RMCCommand {
                                 .executes(RMCCommand::listSnapshots))
                         .then(literal("restore")
                                 .requires(p -> p.hasPermission(4))
-                                .then(argument("snapshot", SnapshotArgumentType.snapshot())
+                                .then(argument("snapshot", StringArgumentType.string())
                                         .executes(RMCCommand::restore)))
 
         );
@@ -75,17 +77,19 @@ public final class RMCCommand {
 
         snapshots.stream().sorted(Comparator.comparing(Snapshot::getTime)).forEach(snapshot -> {
             final var time = snapshot.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
+            final ClickEvent suggestRestoreCommand = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rmc restore " + snapshot.getId());
             final String item = String.format("Snapshot %s at %s %.2f MiB", snapshot.getShortId(), time, snapshot.getSummary().getTotalBytesProcessed() / 1024.0 / 1024.0);
-            context.getSource().sendSuccess(() -> Component.literal(item), false);
+            final Component component = Component.literal(item).withStyle(Style.EMPTY.withClickEvent(suggestRestoreCommand));
+            context.getSource().sendSuccess(() -> component, false);
         });
 
         return SINGLE_SUCCESS;
     }
 
     private static int restore(CommandContext<CommandSourceStack> context) {
-        final var snapshot = context.getArgument("snapshot", Snapshot.class);
+        final var snapshot = StringArgumentType.getString(context, "snapshot");
         try {
-            RMC.backupCore.restore(snapshot.getId());
+            RMC.backupCore.restore(snapshot);
         } catch (Exception e) {
             log.error("Error restoring snapshot", e);
             throw new RuntimeException(e);
