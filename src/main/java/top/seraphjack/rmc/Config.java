@@ -2,12 +2,16 @@ package top.seraphjack.rmc;
 
 import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
-
 import java.time.Duration;
 import java.util.UUID;
 
 public final class Config {
+
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
+
+    public static final ConfigValue<Boolean> USE_BUNDLED_RESTIC = BUILDER
+            .comment("Whether to use bundled restic executable")
+            .define("useBundledRestic", BundledResticExecutable::isAvailable);
 
     public static final ConfigValue<String> RESTIC_EXECUTABLE_PATH = BUILDER
             .comment("Path to the restic executable")

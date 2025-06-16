@@ -37,6 +37,12 @@ Restore to the specified backup and stop the server.
 
 Config file is located at `$SERVER_FOLDER/config/rmc-common.toml`.
 
+#### `useBundledRestic`
+
+- **Type**: Boolean
+- **Default**: True if bundled executable is available
+- **Description**: Whether to use bundled restic executable.
+
 #### `resticExecutablePath`
 
 - **Type**: String

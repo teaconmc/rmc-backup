@@ -16,7 +16,6 @@ import org.slf4j.LoggerFactory;
 import top.seraphjack.backupcore.BackupCore;
 import top.seraphjack.backupcore.BackupProfile;
 import top.seraphjack.restic.entity.Snapshot;
-
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
@@ -47,8 +46,22 @@ public final class RMC {
 
         final Path worldPath = server.getWorldPath(LevelResource.ROOT).normalize().toAbsolutePath();
 
+        final Path resticExecutable;
+        if (Config.USE_BUNDLED_RESTIC.get()) {
+            Path extractedOrFallback;
+            try {
+                extractedOrFallback = BundledResticExecutable.extract();
+            } catch (Exception e) {
+                log.error("Failed to extract restic executable, falling back to specified restic executable path", e);
+                extractedOrFallback = Path.of(Config.RESTIC_EXECUTABLE_PATH.get());
+            }
+            resticExecutable = extractedOrFallback;
+        } else {
+            resticExecutable = Path.of(Config.RESTIC_EXECUTABLE_PATH.get());
+        }
+
         final BackupProfile backupProfile = BackupProfile.builder()
-                .resticExecutable(Path.of(Config.RESTIC_EXECUTABLE_PATH.get()))
+                .resticExecutable(resticExecutable)
                 .repositoryPath(Config.REPOSITORY_PATH.get())
                 .repositoryPassword(Config.REPOSITORY_PASSWORD.get())
                 .awsAccessKeyId(Config.AWS_ACCESS_KEY_ID.get())
