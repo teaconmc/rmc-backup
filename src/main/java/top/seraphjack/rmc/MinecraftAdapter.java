@@ -77,6 +77,9 @@ public final class MinecraftAdapter implements top.seraphjack.backupcore.Minecra
         final String logMessage = String.format("Backup done! Took %.1f seconds, %.2f MiB added", message.getTotalDuration(), message.getDataAddedPacked() / 1024.0 / 1024.0);
         logAndBroadcastMessage(logMessage);
         RMC.updateSnapshotListCache();
+        if (server.getPlayerCount() == 0) {
+            this.anyBackupSinceNoPlayer = true;
+        }
     }
 
     @Override

@@ -16,6 +16,7 @@ import top.seraphjack.restic.entity.Snapshot;
 
 import java.time.Duration;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.Comparator;
 import java.util.List;
@@ -29,6 +30,7 @@ public final class RMCCommand {
 
     public static final DynamicCommandExceptionType ERROR_INVALID_INTERVAL =
             new DynamicCommandExceptionType(msg -> new LiteralMessage("Invalid ISO8601 duration: " + msg));
+    private static final DateTimeFormatter DATE_TIME_FORMAT =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Logger log = LoggerFactory.getLogger(RMCCommand.class);
 
     static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -78,7 +80,7 @@ public final class RMCCommand {
         snapshots.stream().sorted(Comparator.comparing(Snapshot::getTime)).forEach(snapshot -> {
             final var time = snapshot.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
             final ClickEvent suggestRestoreCommand = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rmc restore " + snapshot.getId());
-            final String item = String.format("Snapshot %s at %s %.2f MiB", snapshot.getShortId(), time, snapshot.getSummary().getTotalBytesProcessed() / 1024.0 / 1024.0);
+            final String item = String.format("Snapshot %s at %s %.2f MiB", snapshot.getShortId(), time.format(DATE_TIME_FORMAT), snapshot.getSummary().getTotalBytesProcessed() / 1024.0 / 1024.0);
             final Component component = Component.literal(item).withStyle(Style.EMPTY.withClickEvent(suggestRestoreCommand));
             context.getSource().sendSuccess(() -> component, false);
         });
