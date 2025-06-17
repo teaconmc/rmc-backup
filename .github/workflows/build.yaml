@@ -45,7 +45,7 @@ jobs:
       - name: Get Git tag
         id: git-tag
         run: |
-          TAG=$(git describe --tags --abbrev=0 2>/dev/null)
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Build with Gradle
