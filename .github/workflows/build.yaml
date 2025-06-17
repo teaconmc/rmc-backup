@@ -49,7 +49,7 @@ jobs:
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
       - name: Build with Gradle
-        run: ./gradlew -Dgit.tag=${{ steps.git-tag.outputs.tag }} clean build --debug --stacktrace
+        run: ./gradlew -Dgit.tag=${{ steps.git-tag.outputs.tag }} build
 
       - name: Archive JAR file
         if: success()
