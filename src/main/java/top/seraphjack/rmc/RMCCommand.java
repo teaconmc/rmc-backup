@@ -50,7 +50,8 @@ public final class RMCCommand {
                                 .requires(p -> p.hasPermission(4))
                                 .then(argument("snapshot", StringArgumentType.string())
                                         .executes(RMCCommand::restore)))
-
+                        .then(literal("version")
+                                .executes(RMCCommand::version))
         );
     }
 
@@ -101,4 +102,8 @@ public final class RMCCommand {
         return SINGLE_SUCCESS;
     }
 
+    private static int version(CommandContext<CommandSourceStack> context) {
+        context.getSource().sendSuccess(() -> Component.literal("RMC version " + RMC.modInfo.getVersion()), false);
+        return SINGLE_SUCCESS;
+    }
 }

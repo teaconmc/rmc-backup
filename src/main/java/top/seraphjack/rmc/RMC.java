@@ -11,6 +11,7 @@ import net.neoforged.fml.config.ModConfig;
 import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.server.ServerStartedEvent;
 import net.neoforged.neoforge.event.server.ServerStoppingEvent;
+import net.neoforged.neoforgespi.language.IModInfo;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import top.seraphjack.backupcore.BackupCore;
@@ -30,8 +31,11 @@ public final class RMC {
     static BackupCore backupCore;
     static List<Snapshot> snapshotListCache = List.of();
 
+    static IModInfo modInfo;
+
     public RMC(ModContainer modContainer) {
         modContainer.registerConfig(ModConfig.Type.COMMON, Config.SPEC);
+        modInfo = modContainer.getModInfo();
     }
 
     @SubscribeEvent
