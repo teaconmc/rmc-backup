@@ -50,6 +50,9 @@ jobs:
           TAG=$(git describe --tags --abbrev=0 2>/dev/null || true)
           echo "tag=${TAG}" >> $GITHUB_OUTPUT
 
+      - name: Clean gradle build
+        run: ./gradlew clean
+
       - name: Build with Gradle
         run: ./gradlew -Dgit.tag=${{ steps.git-tag.outputs.tag }} build
 
