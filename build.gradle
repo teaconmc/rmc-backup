@@ -15,7 +15,7 @@ tasks.named('wrapper', Wrapper).configure {
 
 jarJar.enable()
 
-var mod_version = "custom-build"
+var mod_version = "0.0.0-custom-build"
 
 var gitTag = System.getProperty("git.tag")
 if (gitTag != null && !gitTag.isEmpty()) {

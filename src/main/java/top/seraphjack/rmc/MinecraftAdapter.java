@@ -1,6 +1,7 @@
 package top.seraphjack.rmc;
 
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -31,10 +32,21 @@ public final class MinecraftAdapter implements top.seraphjack.backupcore.Minecra
 
     @Override
     public void preBackup() {
-        logAndBroadcastMessage("Backup started");
-        server.saveEverything(true, true, true);
-        for (ServerLevel level : server.getAllLevels()) {
-            level.noSave = true;
+        final CountDownLatch latch = new CountDownLatch(1);
+        final Runnable backupAndSetNoSave = () -> {
+            logAndBroadcastMessage("Backup started");
+            server.saveEverything(true, true, true);
+            for (ServerLevel level : server.getAllLevels()) {
+                level.noSave = true;
+            }
+            latch.countDown();
+        };
+        server.executeIfPossible(backupAndSetNoSave);
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
         }
     }
 

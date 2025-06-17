@@ -30,7 +30,7 @@ public final class RMCCommand {
 
     public static final DynamicCommandExceptionType ERROR_INVALID_INTERVAL =
             new DynamicCommandExceptionType(msg -> new LiteralMessage("Invalid ISO8601 duration: " + msg));
-    private static final DateTimeFormatter DATE_TIME_FORMAT =  DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+    private static final DateTimeFormatter DATE_TIME_FORMAT = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
     private static final Logger log = LoggerFactory.getLogger(RMCCommand.class);
 
     static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
@@ -90,12 +90,14 @@ public final class RMCCommand {
 
     private static int restore(CommandContext<CommandSourceStack> context) {
         final var snapshot = StringArgumentType.getString(context, "snapshot");
-        try {
-            RMC.backupCore.restore(snapshot);
-        } catch (Exception e) {
-            log.error("Error restoring snapshot", e);
-            throw new RuntimeException(e);
-        }
+        new Thread(() -> {
+            try {
+                RMC.backupCore.restore(snapshot);
+            } catch (Exception e) {
+                log.error("Error restoring snapshot", e);
+                throw new RuntimeException(e);
+            }
+        }, "RMC-Restore-Worker").start();
         return SINGLE_SUCCESS;
     }
 
