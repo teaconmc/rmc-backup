@@ -15,6 +15,13 @@ tasks.named('wrapper', Wrapper).configure {
 
 jarJar.enable()
 
+var mod_version = "custom-build"
+
+var gitTag = System.getProperty("git.tag")
+if (gitTag != null && !gitTag.isEmpty()) {
+    mod_version = gitTag
+}
+
 version = mod_version
 group = mod_group_id
 

@@ -1,0 +1,59 @@
+name: Build and Archive
+
+on:
+  push:
+    branches:
+      - forge-1.21
+  pull_request:
+    branches:
+      - forge-1.21
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'adopt'
+          java-version: '21'
+
+      - name: Cache Gradle files
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-
+
+      - name: Cache Gradle build directory
+        uses: actions/cache@v4
+        with:
+          path: build
+          key: ${{ runner.os }}-gradle-build-${{ hashFiles('build.gradle', 'settings.gradle') }}
+          restore-keys: |
+            ${{ runner.os }}-gradle-build-
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Get Git tag
+        id: git-tag
+        run: |
+          TAG=$(git describe --tags --abbrev=0 2>/dev/null)
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+
+      - name: Build with Gradle
+        run: ./gradlew -Dgit.tag=${{ steps.git-tag.outputs.tag }} clean build
+
+      - name: Archive JAR file
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-artifact
+          path: build/libs/*.jar
