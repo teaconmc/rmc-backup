@@ -18,7 +18,6 @@ public final class BundledResticExecutable {
         return resource != null;
     }
 
-
     public static Path extract() throws IOException {
         final var extractPath = getExtractPath();
         final InputStream stream = BundledResticExecutable.class.getClassLoader()
@@ -35,7 +34,7 @@ public final class BundledResticExecutable {
     }
 
     private static Path getExtractPath() {
-        return Path.of("rmc-bundled-restic" + (getOs().equals("windows") ? "exe" : "")).toAbsolutePath();
+        return Path.of("rmc-bundled-restic" + (getOs().equals("windows") ? ".exe" : "")).toAbsolutePath();
     }
 
     private static String getBinaryResourcePath() {
