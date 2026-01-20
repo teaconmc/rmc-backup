@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -37,17 +38,17 @@ public final class RMCCommand {
         dispatcher.register(
                 literal("rmc")
                         .then(literal("schedule")
-                                .requires(p -> p.hasPermission(3))
+                                .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                                 .executes(RMCCommand::scheduleBackup))
                         .then(literal("setInterval")
-                                .requires(p -> p.hasPermission(3))
+                                .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                                 .then(argument("interval", StringArgumentType.string())
                                         .executes(RMCCommand::setInterval)))
                         .then(literal("snapshots")
-                                .requires(p -> p.hasPermission(3))
+                                .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                                 .executes(RMCCommand::listSnapshots))
                         .then(literal("restore")
-                                .requires(p -> p.hasPermission(4))
+                                .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                                 .then(argument("snapshot", StringArgumentType.string())
                                         .executes(RMCCommand::restore)))
                         .then(literal("version")
