@@ -2,6 +2,7 @@ package top.seraphjack.rmc;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.MinecraftServer;
@@ -41,7 +42,10 @@ public final class MinecraftAdapter implements top.seraphjack.backupcore.Minecra
             };
             server.executeIfPossible(backupAndSetNoSave);
             try {
-                latch.await();
+                boolean finished = latch.await(10, TimeUnit.SECONDS);
+                if (!finished) {
+                    log.warn("Saving timed out, skipping");
+                }
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
