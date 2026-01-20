@@ -80,7 +80,7 @@ public final class RMCCommand {
 
         snapshots.stream().sorted(Comparator.comparing(Snapshot::getTime)).forEach(snapshot -> {
             final var time = snapshot.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            final ClickEvent suggestRestoreCommand = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rmc restore " + snapshot.getId());
+            final ClickEvent suggestRestoreCommand = new ClickEvent.RunCommand("rmc restore " + snapshot.getId());
             final String item = String.format("Snapshot %s at %s %.2f MiB", snapshot.getShortId(), time.format(DATE_TIME_FORMAT), snapshot.getSummary().getTotalBytesProcessed() / 1024.0 / 1024.0);
             final Component component = Component.literal(item).withStyle(Style.EMPTY.withClickEvent(suggestRestoreCommand));
             context.getSource().sendSuccess(() -> component, false);
