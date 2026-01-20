@@ -32,21 +32,22 @@ public final class MinecraftAdapter implements top.seraphjack.backupcore.Minecra
 
     @Override
     public void preBackup() {
-        final CountDownLatch latch = new CountDownLatch(1);
-        final Runnable backupAndSetNoSave = () -> {
-            logAndBroadcastMessage("Backup started");
-            server.saveEverything(true, true, true);
-            for (ServerLevel level : server.getAllLevels()) {
-                level.noSave = true;
+        if (!server.isPaused()) {
+            final CountDownLatch latch = new CountDownLatch(1);
+            final Runnable backupAndSetNoSave = () -> {
+                logAndBroadcastMessage("Backup started");
+                server.saveEverything(true, true, true);
+                latch.countDown();
+            };
+            server.executeIfPossible(backupAndSetNoSave);
+            try {
+                latch.await();
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
             }
-            latch.countDown();
-        };
-        server.executeIfPossible(backupAndSetNoSave);
-
-        try {
-            latch.await();
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+        }
+        for (ServerLevel level : server.getAllLevels()) {
+            level.noSave = true;
         }
     }
 
