@@ -100,7 +100,7 @@ public final class MinecraftAdapter implements top.seraphjack.backupcore.Minecra
     @Override
     public void sendForgetGroup(List<ForgetGroup> forgetGroup) {
         if (forgetGroup.stream().anyMatch(g -> g.getRemove() != null && !g.getRemove().isEmpty())) {
-            logAndBroadcastMessage("Removed %s old snapshots", forgetGroup.stream().mapToLong(g -> g.getRemove().size()).sum());
+            logAndBroadcastMessage("Removed %s old snapshots", forgetGroup.stream().filter(g -> g.getRemove() != null).mapToLong(g -> g.getRemove().size()).sum());
         }
         RMC.updateSnapshotListCache();
     }
