@@ -7,6 +7,7 @@ import com.mojang.brigadier.context.CommandContext;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.DynamicCommandExceptionType;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.Style;
@@ -37,17 +38,17 @@ public final class RMCCommand {
         dispatcher.register(
                 literal("rmc")
                         .then(literal("schedule")
-                                .requires(p -> p.hasPermission(3))
+                                .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                                 .executes(RMCCommand::scheduleBackup))
                         .then(literal("setInterval")
-                                .requires(p -> p.hasPermission(3))
+                                .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                                 .then(argument("interval", StringArgumentType.string())
                                         .executes(RMCCommand::setInterval)))
                         .then(literal("snapshots")
-                                .requires(p -> p.hasPermission(3))
+                                .requires(Commands.hasPermission(Commands.LEVEL_ADMINS))
                                 .executes(RMCCommand::listSnapshots))
                         .then(literal("restore")
-                                .requires(p -> p.hasPermission(4))
+                                .requires(Commands.hasPermission(Commands.LEVEL_OWNERS))
                                 .then(argument("snapshot", StringArgumentType.string())
                                         .executes(RMCCommand::restore)))
                         .then(literal("version")
@@ -80,7 +81,7 @@ public final class RMCCommand {
 
         snapshots.stream().sorted(Comparator.comparing(Snapshot::getTime)).forEach(snapshot -> {
             final var time = snapshot.getTime().toInstant().atZone(ZoneId.systemDefault()).toLocalDateTime();
-            final ClickEvent suggestRestoreCommand = new ClickEvent(ClickEvent.Action.SUGGEST_COMMAND, "/rmc restore " + snapshot.getId());
+            final ClickEvent suggestRestoreCommand = new ClickEvent.SuggestCommand("/rmc restore " + snapshot.getId());
             final String item = String.format("Snapshot %s at %s %.2f MiB", snapshot.getShortId(), time.format(DATE_TIME_FORMAT), snapshot.getSummary().getTotalBytesProcessed() / 1024.0 / 1024.0);
             final Component component = Component.literal(item).withStyle(Style.EMPTY.withClickEvent(suggestRestoreCommand));
             context.getSource().sendSuccess(() -> component, false);
